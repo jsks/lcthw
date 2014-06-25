@@ -1,0 +1,21 @@
+scanf:reads input from standard stream according to FORMAT
+fscanf:reads input from any stream pointer according to FORMAT
+sscanf:reads input from a character string
+vfscanf:analogous to vfprintf and reads input from the stream pointer stream using a va_list
+vscanf:scans va_list from stdin (analogous to vprintf)
+vsscanf:scans va_list from a string (analogous to vsprintf)
+fgets:reads at most one less than the number of characters specified by size from the given stream and stores them in the string STR. Will append '\0'.
+gets:reads an infinite number of characters from stdin
+fopen:opens a file and associates a stream with it
+freopen:closes old stream and associates it with new file
+fdopen:associates a stream with an existing fd
+fclose:disassociates named stream from underlying file or set of functions
+fcloseall:calls fclose on all open streams
+fgetpos:retrieves current position indiciator and stores the value in an opaque object of type fpos_t
+fsetpos:sets the file position indicator and stores position in an object of type fpos_t
+fseek:set the position indicator for the stream pointed to by STREAM
+ftell:obtains current value of the file position indicator
+rewind:set the file position indicator to the beginning of a file
+fprintf:writes output to the given output STREAM
+fwrite:writes 'nitems' objects, each 'size' bytes long, to a stream
+fread:reads 'nitems' objects, each 'size' bytes long, from a stream
