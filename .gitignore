@@ -1,3 +1,5 @@
 bin/*
+ex26/devpkgz/*
+usr/*
 *.o
 .DS_Store
