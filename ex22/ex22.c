@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "ex22.h"
-#include "dbg.h"
+#include "../util/dbg.h"
 
 int THE_SIZE = 1000;
 

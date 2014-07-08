@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "dbg.h"
+#include "util/dbg.h"
 
 #define MAX_DATA 100
 
