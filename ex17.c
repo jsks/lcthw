@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "util/strlcpy.h"
+
 struct Address {
     int id;
     int set;
@@ -182,6 +184,9 @@ void Database_get(int id) {
 
 void Database_delete(int id) {
     struct Address addr = {.id = id, .set = 0};
+
+    addr.email = malloc(conn.db->max_data);
+    addr.name = malloc(conn.db->max_data);
     conn.db->rows[id] = addr;
 }
 
