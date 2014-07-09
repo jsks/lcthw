@@ -164,6 +164,7 @@ void Database_set(int id, const char *name, const char *email) {
     if (addr->set) die("Already set, delete it first");
 
     addr->set = 1;
+    addr->id = id;
     // Warning: only works on osx/bsd
     size_t res = strlcpy(addr->name, name, conn.db->max_data);
     if (res == 0) die ("Name copy failed");
@@ -220,7 +221,7 @@ int main(int argc, char *argv[]) {
 
     if (action == 'g' || action == 's' || action == 'd') {
         if (argc > 3) id = atoi(argv[3]);
-        if (id > conn.db->max_rows) die("id too large.");
+        if (id >= conn.db->max_rows) die("id too large.");
     };
 
     switch (action) {

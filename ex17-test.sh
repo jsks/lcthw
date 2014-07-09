@@ -1,8 +1,6 @@
 #!/bin/zsh
 . ./util/testf.sh
 
-trap "rm test.db 2>/dev/null" SIGEXIT
-
 # Initialise our database
 rm test.db 2>/dev/null
 touch test.db
@@ -21,16 +19,23 @@ done
 : ${max_rows:=100}
 : ${max_data:=512}
 
-stest "Creation" ./ex17 test.db c $max_rows $max_data
+function test_set {
+    for i in {0..$(($max_rows + 1))}; do
+        ./ex17 test.db s $i "$(printf 'c%.0s' {1..$max_data})" "foo@bar" || return 1
+    done
+}
 
-for i in {0..$(($max_rows - 1))}; do
-    stest "Set $i" ./ex17 test.db s $i "$(printf 'c%.0s' {1..$max_data})" foo@bar
-done
+function test_get {
+    for i in {0..$(($max_rows - 1))}; do
+        ./ex17 test.db g $i || return 1
+    done
+}
 
-stest "List" ./ex17 test.db l
-
-for i in {0..$(($max_rows - 1))}; do
-    stest "Get $i" ./ex17 test.db g $i
-done
-
-stest "Search" ./ex17 test.db f "ccc"
+stest "Creation" "./ex17 test.db c $max_rows $max_data"
+stest "Set" test_set
+stest "List" "./ex17 test.db l"
+stest "Get" test_get
+stest "Search" "./ex17 test.db f ccc"
+stest "Delete" "./ex17 test.db d 1"
+stest "Get[deleted id]" "./ex17 test.db g 1" 1
+stest "Delete[ofb]" "./ex17 test.db d $(($max_rows+1))" 1
