@@ -20,7 +20,7 @@ done
 : ${max_data:=512}
 
 function test_set {
-    for i in {0..$(($max_rows + 1))}; do
+    for i in {0..$(($max_rows - 1))}; do
         ./ex17 test.db s $i "$(printf 'c%.0s' {1..$max_data})" "foo@bar" || return 1
     done
 }
