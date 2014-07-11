@@ -1,40 +1,30 @@
 #include "shell.h"
 #include "dbg.h"
-#include <stdarg.h>
 
-int Shell_exec(Shell template, ...) {
+int Shell_exec(Shell template, const char *opts[]) {
     apr_pool_t *p = NULL;
-    int rc = -1;
     apr_status_t rv = APR_SUCCESS;
-    va_list argp;
-    const char *key = NULL;
-    const char *arg = NULL;
     int i = 0;
+    int j = 0;
+    int rc = -1;
+    int count = 0;
 
     rv = apr_pool_create(&p, NULL);
     check(rv == APR_SUCCESS, "Failed to create pool.");
 
-    va_start(argp, template);
-
-    for (key = va_arg(argp, const char *);
-            key != NULL;
-            key = va_arg(argp, const char *)) {
-        arg = va_arg(argp, const char *);
-
-        for (i = 0; template.args[i] != NULL; i++) {
-            if (strcmp(template.args[i], key) == 0) {
-                template.args[i] = arg;
-                break; //found it
+    for (i = 0; opts[i] != NULL; i++) {
+        for (j = 0; template.args[j] != NULL; j++) {
+            if (strcmp(template.args[j], opts[i]) == 0) {
+                template.args[j] = opts[++i];
+                count++;
+                break;
             }
         }
     }
-    for (i = 0; template.args[i] != NULL; i++) {
-        printf("Args: %s\n", template.args[i]);
-    }
+    check(template.vargs == count, "Invalid number of arguments.");
 
     rc = Shell_run(p, &template);
     apr_pool_destroy(p);
-    va_end(argp);
     return rc;
 
 error:
@@ -79,42 +69,49 @@ Shell CLEANUP_SH = {
     .exe = "rm",
     .dir = "/tmp",
     .args = {"rm", "-rf", "/tmp/pkg-build", "/tmp/pkg-src.tar.gz",
-        "/tmp/pkg-src.tar.bz2", "/tmp/DEPENDS", NULL}
+        "/tmp/pkg-src.tar.bz2", "/tmp/DEPENDS", NULL},
+    .vargs = 0
 };
 
 Shell GIT_SH = {
     .dir = "/tmp",
     .exe = "git",
-    .args = {"git", "clone", "URL", "pkg-build", NULL}
+    .args = {"git", "clone", "URL", "pkg-build", NULL},
+    .vargs = 1
 };
 
 Shell TAR_SH = {
     .dir = "/tmp/pkg-build",
     .exe = "tar",
-    .args = {"tar", "-xzf", "FILE", "--strip-components", "l", NULL}
+    .args = {"tar", "-xzf", "FILE", "--strip-components", "1", NULL},
+    .vargs = 1
 };
 
 Shell CURL_SH = {
     .dir = "/tmp",
     .exe = "curl",
-    .args = {"curl", "-L", "-o", "TARGET", "URL", NULL}
+    .args = {"curl", "-L", "-o", "TARGET", "URL", NULL},
+    .vargs = 2
 };
 
 Shell CONFIGURE_SH = {
     .exe = "./configure",
     .dir = "/tmp/pkg-build",
-    .args = {"configure", "OPTS", NULL}
+    .args = {"configure", "OPTS", NULL},
+    .vargs = 1
 };
 
 Shell MAKE_SH = {
     .exe = "make",
     .dir = "/tmp/pkg-build",
-    .args = {"make", "OPTS", NULL}
+    .args = {"make", "OPTS", NULL},
+    .vargs = 1
 };
 
 Shell INSTALL_SH = {
-    .exe = "sudo",
+    .exe = "make",
     .dir = "/tmp/pkg-build",
-    .args = {"sudo", "make", "TARGET", NULL}
+    .args = {"make", "TARGET", NULL},
+    .vargs = 1
 };
 

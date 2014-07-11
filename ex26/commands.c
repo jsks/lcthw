@@ -42,14 +42,14 @@ int Command_fetch(apr_pool_t *p, const char *url, int fetch_only) {
     check(rv == APR_SUCCESS, "Failed to parse URL: %s", url);
 
     if (apr_fnmatch(GIT_PAT, info.path, 0) == APR_SUCCESS) {
-        rc = Shell_exec(GIT_SH, "URL", url, NULL);
+        rc = Shell_exec(GIT_SH, (const char *[]){"URL", url, NULL});
         check(rc == 0, "git failed.");
     } else if (apr_fnmatch(DEPEND_PAT, info.path, 0) == APR_SUCCESS) {
         check(!fetch_only, "No point in fetching a DEPENDS file.");
 
         if (info.scheme) {
             depends_file = DEPENDS_PATH;
-            rc = Shell_exec(CURL_SH, "URL", url, "TARGET", depends_file, NULL);
+            rc = Shell_exec(CURL_SH, (const char *[]){"URL", url, "TARGET", depends_file, NULL});
             check(rc == 0, "Curl failed.");
         } else {
             depends_file = info.path;
@@ -64,7 +64,7 @@ int Command_fetch(apr_pool_t *p, const char *url, int fetch_only) {
         return 0;
     } else if (apr_fnmatch(TAR_GZ_PAT, info.path, 0) == APR_SUCCESS) {
         if (info.scheme) {
-            rc = Shell_exec(CURL_SH, "URL", url, "TARGET", TAR_GZ_SRC, NULL);
+            rc = Shell_exec(CURL_SH, (const char *[]){"URL", url, "TARGET", TAR_GZ_SRC, NULL});
             check(rc == 0, "Failed to curl source: %s", url);
         }
 
@@ -72,11 +72,11 @@ int Command_fetch(apr_pool_t *p, const char *url, int fetch_only) {
                 APR_UREAD | APR_UWRITE | APR_UEXECUTE, p);
         check(rv == APR_SUCCESS, "Failed to make directory %s", BUILD_DIR);
 
-        rc = Shell_exec(TAR_SH, "FILE", TAR_GZ_SRC, NULL);
+        rc = Shell_exec(TAR_SH, (const char *[]){"FILE", TAR_GZ_SRC, NULL});
         check(rc == 0, "Failed to untar %s", TAR_GZ_SRC);
     } else if (apr_fnmatch(TAR_BZ2_PAT, info.path, 0) == APR_SUCCESS) {
         if (info.scheme) {
-            rc = Shell_exec(CURL_SH, "URL", url, "TARGET", TAR_BZ2_SRC, NULL);
+            rc = Shell_exec(CURL_SH, (const char *[]){"URL", url, "TARGET", TAR_BZ2_SRC, NULL});
             check(rc == 0, "Curl failed.");
         }
 
@@ -84,7 +84,7 @@ int Command_fetch(apr_pool_t *p, const char *url, int fetch_only) {
                 APR_UREAD | APR_UWRITE | APR_UEXECUTE, p);
 
         check(rc == 0, "Failed to make directory %s", BUILD_DIR);
-        rc = Shell_exec(TAR_SH, "FILE", TAR_BZ2_SRC, NULL);
+        rc = Shell_exec(TAR_SH, (const char *[]){"FILE", TAR_BZ2_SRC, NULL});
         check(rc == 0, "Failed to untar %s", TAR_BZ2_SRC);
     } else {
         sentinel("Don't now how to handle %s", url);
@@ -105,18 +105,18 @@ int Command_build(apr_pool_t *p, const char *url, const char *configure_opts, co
     // actually do an install
     if (access(CONFIG_SCRIPT, X_OK) == 0) {
         log_info("Has a configure script, running it.");
-        rc = Shell_exec(CONFIGURE_SH, "OPTS", configure_opts, NULL);
+        rc = Shell_exec(CONFIGURE_SH, (const char *[]){"OPTS", configure_opts, NULL});
         check(rc == 0, "Failed to configure.");
     }
 
-    rc = Shell_exec(MAKE_SH, "OPTS", make_opts, NULL);
+    rc = Shell_exec(MAKE_SH, (const char *[]){"OPTS", make_opts, NULL});
     check(rc == 0, "Failed to build.");
 
-    rc = Shell_exec(INSTALL_SH, 
-            "TARGET", install_opts ? install_opts : "install", NULL);
+    rc = Shell_exec(INSTALL_SH,
+            (const char *[]){"TARGET", install_opts ? install_opts : "install", NULL});
     check(rc == 0, "Failed to install");
 
-    rc = Shell_exec(CLEANUP_SH, NULL);
+    rc = Shell_exec(CLEANUP_SH, (const char *[]){NULL});
     check(rc == 0, "Failed to cleanup after build.");
 
     rc = DB_update(url);
@@ -131,7 +131,7 @@ error:
 int Command_install(apr_pool_t *p, const char *url, const char *configure_opts,
         const char *make_opts, const char *install_opts) {
     int rc = 0;
-    check(Shell_exec(CLEANUP_SH, NULL) == 0, "Failed to cleanup before building.");
+    check(Shell_exec(CLEANUP_SH, (const char *[]){NULL}) == 0, "Failed to cleanup before building.");
     rc = DB_find(url);
     check(rc != -1, "Error checking the install database.");
 
@@ -153,10 +153,10 @@ int Command_install(apr_pool_t *p, const char *url, const char *configure_opts,
         sentinel("Install failed: %s", url);
     }
 
-    Shell_exec(CLEANUP_SH, NULL);
+    Shell_exec(CLEANUP_SH, (const char *[]){NULL});
     return 0;
 
 error:
-    Shell_exec(CLEANUP_SH, NULL);
+    //Shell_exec(CLEANUP_SH, (const char *[]){NULL});
     return -1;
 }

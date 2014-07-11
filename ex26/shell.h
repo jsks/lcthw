@@ -8,6 +8,7 @@
 typedef struct Shell {
     const char *dir;
     const char *exe;
+    int vargs;
 
     apr_procattr_t *attr;
     apr_proc_t proc;
@@ -18,7 +19,7 @@ typedef struct Shell {
 } Shell;
 
 int Shell_run(apr_pool_t *p, Shell *cmd);
-int Shell_exec(Shell cmd, ...);
+int Shell_exec(Shell cmd, const char *opts[]);
 
 // Use extern to indicate that *.c can access variables being defined
 extern Shell CLEANUP_SH;
